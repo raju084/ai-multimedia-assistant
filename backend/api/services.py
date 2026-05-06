@@ -23,25 +23,53 @@ def process_pdf(document_instance):
     )
     return full_text
 
+_whisper_model = None
+
+def get_whisper_model():
+    """
+    Lazy load the Whisper model to avoid repeated loading overhead.
+    """
+    global _whisper_model
+    if _whisper_model is None:
+        print("Loading Whisper 'base' model...")
+        import whisper
+        _whisper_model = whisper.load_model("base")
+    return _whisper_model
+
 def process_audio_video(document_instance):
     """
     Extracts transcription and timestamps from audio/video using Whisper.
     """
     file_path = document_instance.file.path
+    print(f"Starting transcription for: {file_path}")
     
-    # Load the base Whisper model (or use API if preferred)
-    model = whisper.load_model("base")
-    result = model.transcribe(file_path)
-    
-    # Save transcriptions with timestamps
-    for segment in result['segments']:
+    try:
+        # Load the base Whisper model
+        model = get_whisper_model()
+        result = model.transcribe(file_path)
+        
+        # Save transcriptions with timestamps
+        transcription_objs = []
+        for segment in result['segments']:
+            transcription_objs.append(Transcription(
+                document=document_instance,
+                text=segment['text'].strip(),
+                start_time=segment['start'],
+                end_time=segment['end'],
+            ))
+        
+        # Bulk create for efficiency
+        Transcription.objects.bulk_create(transcription_objs)
+        print(f"Transcription completed for: {document_instance.title}")
+        return result['text']
+    except Exception as e:
+        print(f"TRANSCRIPTION ERROR for {document_instance.title}: {str(e)}")
+        # Optionally, create a dummy transcription to indicate failure
         Transcription.objects.create(
             document=document_instance,
-            text=segment['text'],
-            start_time=segment['start'],
-            end_time=segment['end'],
+            text=f"[Transcription Error: {str(e)}]",
         )
-    return result['text']
+        raise e
 
 def generate_ai_response(document, user_query):
     """
@@ -76,10 +104,14 @@ def generate_ai_response(document, user_query):
             
             system_prompt = (
                 f"You are a helpful assistant analyzing the {contentType} of '{document.title}'.\n"
-                f"When answering, if the {contentType} has timestamps (e.g. [12.5s]), find the most relevant timestamp "
-                "where the answer is discussed and include it at the end of your response in the format: "
-                "TIMESTAMP: {seconds}. Example: 'TIMESTAMP: 45.2'.\n\n"
-                f"{contentType.capitalize()}:\n{timestamped_context[:15000]}"
+                f"The provided {contentType} includes timestamps in brackets, like [12.50s].\n"
+                "Your goal is to answer the user's question accurately based ONLY on the provided content.\n"
+                "When you find the relevant part of the content, you MUST include the exact timestamp "
+                "where it is discussed at the very end of your response.\n"
+                "Format the timestamp as: TIMESTAMP: {seconds}\n"
+                "Example: 'The speaker mentions the Game of Life at the beginning. TIMESTAMP: 5.2'\n\n"
+                f"If you cannot find a specific timestamp or the transcript is empty, do not guess.\n\n"
+                f"{contentType.capitalize()} Content:\n{timestamped_context[:15000]}"
             )
 
             messages = [
@@ -93,11 +125,11 @@ def generate_ai_response(document, user_query):
             timestamp = None
             if "TIMESTAMP:" in content:
                 import re
-                match = re.search(r"TIMESTAMP:\s*(\d+\.?\d*)", content)
+                match = re.search(r"TIMESTAMP:\s*(\d+\.?\d*)s?", content)
                 if match:
                     timestamp = float(match.group(1))
                     # Clean the tag out of the visible message
-                    content = re.sub(r"TIMESTAMP:\s*\d+\.?\d*", "", content).strip()
+                    content = re.sub(r"TIMESTAMP:\s*\d+\.?\d*\s*s?", "", content).strip()
 
             return content, timestamp
         except Exception as e:

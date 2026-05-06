@@ -1,4 +1,5 @@
 from rest_framework import viewsets, parsers, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Document, ChatMessage
 from .serializers import DocumentSerializer, ChatMessageSerializer
@@ -37,6 +38,31 @@ class DocumentViewSet(viewsets.ModelViewSet):
         
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(detail=True, methods=['post'])
+    def reprocess(self, request, pk=None):
+        document = self.get_object()
+        import threading
+        from api.services import process_pdf, process_audio_video
+
+        # Delete existing transcriptions
+        document.transcriptions.all().delete()
+
+        def run_processing(doc_id, file_type):
+            from .models import Document
+            try:
+                doc = Document.objects.get(id=doc_id)
+                if file_type == 'pdf':
+                    process_pdf(doc)
+                elif file_type in ['audio', 'video']:
+                    process_audio_video(doc)
+            except Exception as e:
+                print(f"Background reprocessing error: {str(e)}")
+
+        thread = threading.Thread(target=run_processing, args=(document.id, document.file_type))
+        thread.start()
+
+        return Response({'status': 'Reprocessing started'}, status=status.HTTP_202_ACCEPTED)
 
 class ChatMessageViewSet(viewsets.ModelViewSet):
     queryset = ChatMessage.objects.all().order_by('timestamp')
