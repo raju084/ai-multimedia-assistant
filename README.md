@@ -2,6 +2,8 @@
 
 A full-stack application that allows users to upload PDFs, audio, and video files and interact with them using an AI assistant. The app features automatic transcription (Whisper), AI-powered Q&A (Llama 3 via Groq), and intelligent timestamp-based video jumping.
 
+**Live Website**: [https://ai-multimedia-assistant-kca4.vercel.app/](https://ai-multimedia-assistant-kca4.vercel.app/)
+
 ## 🌟 Key Features
 - **Multimedia Support**: Upload and process PDFs, MP4s, and MP3s.
 - **AI Chat**: Ask questions about your documents and get context-aware answers.
