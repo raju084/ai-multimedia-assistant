@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Node
+node_modules/
+dist/
+.DS_Store
+
+# Media
+backend/media/
+backend/staticfiles/
+db.sqlite3
+
+# OS
+.idea/
+.vscode/
+*.swp
