@@ -1,5 +1,5 @@
 import os
-import whisper
+import groq
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from .models import Transcription
@@ -23,34 +23,34 @@ def process_pdf(document_instance):
     )
     return full_text
 
-_whisper_model = None
-
-def get_whisper_model():
-    """
-    Lazy load the Whisper model to avoid repeated loading overhead.
-    """
-    global _whisper_model
-    if _whisper_model is None:
-        print("Loading Whisper 'base' model...")
-        import whisper
-        _whisper_model = whisper.load_model("base")
-    return _whisper_model
-
 def process_audio_video(document_instance):
     """
-    Extracts transcription and timestamps from audio/video using Whisper.
+    Extracts transcription and timestamps from audio/video using Groq's Whisper API.
     """
     file_path = document_instance.file.path
-    print(f"Starting transcription for: {file_path}")
+    print(f"Starting Groq transcription for: {file_path}")
     
+    groq_api_key = os.getenv("GROQ_API_KEY")
+    if not groq_api_key:
+        raise ValueError("GROQ_API_KEY not found in environment variables.")
+
     try:
-        # Load the base Whisper model
-        model = get_whisper_model()
-        result = model.transcribe(file_path)
+        from groq import Groq
+        client = Groq(api_key=groq_api_key)
+        
+        with open(file_path, "rb") as file:
+            # Using verbose_json to get segments and timestamps
+            transcription = client.audio.transcriptions.create(
+                file=(os.path.basename(file_path), file.read()),
+                model="whisper-large-v3",
+                response_format="verbose_json",
+            )
         
         # Save transcriptions with timestamps
         transcription_objs = []
-        for segment in result['segments']:
+        # Groq's verbose_json returns segments
+        segments = getattr(transcription, 'segments', [])
+        for segment in segments:
             transcription_objs.append(Transcription(
                 document=document_instance,
                 text=segment['text'].strip(),
@@ -58,12 +58,21 @@ def process_audio_video(document_instance):
                 end_time=segment['end'],
             ))
         
+        # Fallback if no segments but text exists
+        if not transcription_objs and transcription.text:
+            transcription_objs.append(Transcription(
+                document=document_instance,
+                text=transcription.text,
+                start_time=0.0,
+                end_time=0.0
+            ))
+
         # Bulk create for efficiency
         Transcription.objects.bulk_create(transcription_objs)
-        print(f"Transcription completed for: {document_instance.title}")
-        return result['text']
+        print(f"Groq transcription completed for: {document_instance.title}")
+        return transcription.text
     except Exception as e:
-        print(f"TRANSCRIPTION ERROR for {document_instance.title}: {str(e)}")
+        print(f"GROQ TRANSCRIPTION ERROR for {document_instance.title}: {str(e)}")
         # Optionally, create a dummy transcription to indicate failure
         Transcription.objects.create(
             document=document_instance,
