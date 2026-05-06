@@ -10,7 +10,8 @@ const FileUpload = ({ onUploadSuccess, activeMedia }) => {
 
   const fetchRecentFiles = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/documents/');
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await axios.get(`${apiUrl}/api/documents/`);
       // Show latest files first
       setRecentFiles(response.data.reverse());
     } catch (error) {
@@ -21,7 +22,8 @@ const FileUpload = ({ onUploadSuccess, activeMedia }) => {
   const handleDelete = async (e, id) => {
     e.stopPropagation();
     try {
-      await axios.delete(`http://localhost:8000/api/documents/${id}/`);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      await axios.delete(`${apiUrl}/api/documents/${id}/`);
       fetchRecentFiles(); // Refresh the list
     } catch (error) {
       console.error('Failed to delete file', error);
@@ -48,7 +50,8 @@ const FileUpload = ({ onUploadSuccess, activeMedia }) => {
     formData.append('file_type', fileType);
 
     try {
-      const response = await axios.post('http://localhost:8000/api/documents/', formData, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await axios.post(`${apiUrl}/api/documents/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       onUploadSuccess(response.data);

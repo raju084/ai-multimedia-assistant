@@ -31,7 +31,7 @@ function App() {
           <div className="media-section">
             <h3>Media Player</h3>
             <MediaPlayer
-              src={activeMedia ? (activeMedia.file.startsWith('http') ? activeMedia.file : `http://localhost:8000${activeMedia.file}`) : null}
+              src={activeMedia ? (activeMedia.file.startsWith('http') ? activeMedia.file : `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${activeMedia.file}`) : null}
               type={activeMedia?.file_type}
               jumpTime={jumpTime}
             />

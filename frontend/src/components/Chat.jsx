@@ -12,7 +12,8 @@ const Chat = ({ onJumpToTime, activeMedia }) => {
       return;
     }
     try {
-      const res = await axios.get(`http://localhost:8000/api/chat/?document_id=${activeMedia.id}`);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const res = await axios.get(`${apiUrl}/api/chat/?document_id=${activeMedia.id}`);
       setMessages(res.data);
     } catch (error) {
       console.error('Failed to fetch messages');
@@ -37,7 +38,8 @@ const Chat = ({ onJumpToTime, activeMedia }) => {
     setInput('');
 
     try {
-      await axios.post('http://localhost:8000/api/chat/', newMsg);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      await axios.post(`${apiUrl}/api/chat/`, newMsg);
       fetchMessages(); 
     } catch (error) {
       console.error('Failed to send message');
