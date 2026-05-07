@@ -45,6 +45,11 @@ ALLOWED_HOSTS = [
     '.vercel.app',
 ]
 
+# Render proxy settings
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 CSRF_TRUSTED_ORIGINS = [
     "https://ai-multimedia-assistant.vercel.app",
     "https://ai-multimedia-assistant-kca4.vercel.app",
