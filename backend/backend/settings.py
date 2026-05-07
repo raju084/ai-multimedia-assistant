@@ -146,8 +146,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",                          # Vite dev server
     "http://localhost:3000",
-    "https://ai-multimedia-assistant.vercel.app",     # ← your Vercel URL
+    "https://ai-multimedia-assistant.vercel.app",     # Production Vercel URL
+    "https://ai-multimedia-assistant-kca4.vercel.app", # Secondary Vercel URL
 ]
+
 # Also allow any Vercel preview-deployment sub-domain
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://.*\.vercel\.app$",
