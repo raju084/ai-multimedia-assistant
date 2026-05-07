@@ -2,9 +2,8 @@ services:
   - type: web
     name: ai-multimedia-backend
     env: python
-    buildCommand: "./build.sh"
-    startCommand: "gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --timeout 600 --log-level debug"
-    rootDirectory: backend
+    buildCommand: "./backend/build.sh"
+    startCommand: "gunicorn --chdir backend backend.wsgi:application --bind 0.0.0.0:$PORT --timeout 600 --log-level debug"
     plan: free
     envVars:
       - key: PYTHON_VERSION
