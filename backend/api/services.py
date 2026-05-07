@@ -29,7 +29,8 @@ def _get_audio_duration_seconds(file_path):
             timeout=30,
         )
         return float(result.stdout.strip())
-    except Exception:
+    except Exception as e:
+        print(f"DEBUG: ffprobe check failed: {str(e)}")
         return None
 
 
