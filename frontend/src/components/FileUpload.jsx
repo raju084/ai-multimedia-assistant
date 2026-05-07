@@ -5,6 +5,7 @@ import { Upload, File as FileIcon, Loader, FolderOpen, Clock, Trash2 } from 'luc
 const FileUpload = ({ onUploadSuccess, activeMedia }) => {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [recentFiles, setRecentFiles] = useState([]);
   const fileInputRef = useRef(null);
 
@@ -35,9 +36,12 @@ const FileUpload = ({ onUploadSuccess, activeMedia }) => {
     fetchRecentFiles();
   }, []);
 
+  const LARGE_FILE_THRESHOLD = 25 * 1024 * 1024; // 25 MB
+
   const handleUpload = async () => {
     if (!file) return;
     setUploading(true);
+    setUploadProgress(0);
 
     const formData = new FormData();
     formData.append('file', file);
@@ -52,16 +56,25 @@ const FileUpload = ({ onUploadSuccess, activeMedia }) => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       const response = await axios.post(`${apiUrl}/api/documents/`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 10 * 60 * 1000, // 10 minutes for large files
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const pct = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(pct);
+          }
+        },
       });
       onUploadSuccess(response.data);
       setFile(null);
+      setUploadProgress(0);
       fetchRecentFiles();
     } catch (error) {
       console.error('Upload failed', error);
-      alert('Upload failed');
+      alert('Upload failed: ' + (error.response?.data?.detail || error.message));
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -90,10 +103,27 @@ const FileUpload = ({ onUploadSuccess, activeMedia }) => {
         )}
       </div>
       {file && (
-        <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
-          <button onClick={handleUpload} disabled={uploading}>
-            {uploading ? <Loader className="spin" /> : <Upload />} Upload File
-          </button>
+        <div style={{ marginTop: '16px' }}>
+          {file.size > LARGE_FILE_THRESHOLD && (
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '8px' }}>
+              ⚠️ Large file ({(file.size / 1024 / 1024).toFixed(1)} MB) — will be split into chunks for transcription.
+            </p>
+          )}
+          {uploading && uploadProgress > 0 && (
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ background: 'var(--bg-secondary, #2a2a3e)', borderRadius: '8px', overflow: 'hidden', height: '8px' }}>
+                <div style={{ width: `${uploadProgress}%`, background: 'var(--primary-accent)', height: '100%', transition: 'width 0.3s ease' }} />
+              </div>
+              <p style={{ fontSize: '0.75rem', textAlign: 'center', marginTop: '4px', color: 'var(--text-muted)' }}>
+                Uploading… {uploadProgress}%
+              </p>
+            </div>
+          )}
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <button onClick={handleUpload} disabled={uploading}>
+              {uploading ? <Loader className="spin" /> : <Upload />} {uploading ? 'Uploading…' : 'Upload File'}
+            </button>
+          </div>
         </div>
       )}
 
