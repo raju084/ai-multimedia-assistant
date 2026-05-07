@@ -3,7 +3,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Document, ChatMessage
 from .serializers import DocumentSerializer, ChatMessageSerializer
+from django.http import HttpResponse
 from api.services import process_pdf, process_audio_video
+
+def health_check(request):
+    return HttpResponse("Backend is running!")
 
 class DocumentViewSet(viewsets.ModelViewSet):
     queryset = Document.objects.all()
