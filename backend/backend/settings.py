@@ -37,13 +37,7 @@ SECRET_KEY = 'django-insecure-pgg3l=bwe&y%i=+!!hu*ys*7*h28u&r7xpk1ig1&2j6n%1@4ub
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    'ai-multimedia-backend.onrender.com', # Explicit Render host
-    '.onrender.com',
-    '.vercel.app',
-]
+ALLOWED_HOSTS = ['*']
 
 # Render proxy settings
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -154,12 +148,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # CORS — allow the Vercel frontend and local dev to call the Django API
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",                          # Vite dev server
-    "http://localhost:3000",
-    "https://ai-multimedia-assistant.vercel.app",     # Production Vercel URL
-    "https://ai-multimedia-assistant-kca4.vercel.app", # Secondary Vercel URL
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Also allow any Vercel preview-deployment sub-domain
 CORS_ALLOWED_ORIGIN_REGEXES = [
