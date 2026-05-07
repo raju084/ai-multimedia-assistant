@@ -3,7 +3,7 @@ services:
     name: ai-multimedia-backend
     env: python
     buildCommand: "./backend/build.sh"
-    startCommand: "gunicorn --chdir backend backend.wsgi:application --bind 0.0.0.0:$PORT --timeout 600 --log-level debug"
+    startCommand: "gunicorn --chdir backend backend.wsgi:application --bind 0.0.0.0:$PORT --timeout 600"
     plan: free
     envVars:
       - key: PYTHON_VERSION
@@ -16,10 +16,6 @@ services:
         fromDatabase:
           name: ai-multimedia-db
           property: connectionString
-    disk:
-      name: media-storage
-      mountPath: /opt/render/project/src/backend/media
-      sizeGB: 1
 
 databases:
   - name: ai-multimedia-db
