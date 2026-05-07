@@ -11,7 +11,7 @@ const FileUpload = ({ onUploadSuccess, activeMedia }) => {
 
   const fetchRecentFiles = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://ai-multimedia-backend.onrender.com';
       const response = await axios.get(`${apiUrl}/api/documents/`);
       // Show latest files first
       setRecentFiles(response.data.reverse());
@@ -23,7 +23,7 @@ const FileUpload = ({ onUploadSuccess, activeMedia }) => {
   const handleDelete = async (e, id) => {
     e.stopPropagation();
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://ai-multimedia-backend.onrender.com';
       await axios.delete(`${apiUrl}/api/documents/${id}/`);
       fetchRecentFiles(); // Refresh the list
     } catch (error) {
@@ -54,7 +54,7 @@ const FileUpload = ({ onUploadSuccess, activeMedia }) => {
     formData.append('file_type', fileType);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://ai-multimedia-backend.onrender.com';
       const response = await axios.post(`${apiUrl}/api/documents/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         timeout: 10 * 60 * 1000, // 10 minutes for large files

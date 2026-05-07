@@ -12,7 +12,7 @@ const Chat = ({ onJumpToTime, activeMedia }) => {
       return;
     }
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://ai-multimedia-backend.onrender.com';
       const res = await axios.get(`${apiUrl}/api/chat/?document_id=${activeMedia.id}`);
       setMessages(res.data);
     } catch (error) {
@@ -38,7 +38,7 @@ const Chat = ({ onJumpToTime, activeMedia }) => {
     setInput('');
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://ai-multimedia-backend.onrender.com';
       await axios.post(`${apiUrl}/api/chat/`, newMsg);
       fetchMessages(); 
     } catch (error) {
