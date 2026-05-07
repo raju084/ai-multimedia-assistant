@@ -105,7 +105,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-print("DEBUG: Using SQLite for troubleshooting")
 
 
 # Password validation
