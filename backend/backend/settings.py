@@ -40,8 +40,14 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '.onrender.com',          # Render backend
-    '.vercel.app',            # Vercel frontend (for health-check requests)
+    'ai-multimedia-backend.onrender.com', # Explicit Render host
+    '.onrender.com',
+    '.vercel.app',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://ai-multimedia-assistant.vercel.app",
+    "https://ai-multimedia-assistant-kca4.vercel.app",
 ]
 
 
