@@ -37,7 +37,12 @@ SECRET_KEY = 'django-insecure-pgg3l=bwe&y%i=+!!hu*ys*7*h28u&r7xpk1ig1&2j6n%1@4ub
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.onrender.com',          # Render backend
+    '.vercel.app',            # Vercel frontend (for health-check requests)
+]
 
 
 # Application definition
@@ -137,7 +142,17 @@ import os
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS — allow the Vercel frontend and local dev to call the Django API
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",                          # Vite dev server
+    "http://localhost:3000",
+    "https://ai-multimedia-assistant.vercel.app",     # ← your Vercel URL
+]
+# Also allow any Vercel preview-deployment sub-domain
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.vercel\.app$",
+]
+CORS_ALLOW_CREDENTIALS = True
 
 # Allow large video/audio uploads (up to 500 MB)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 500 * 1024 * 1024   # 500 MB

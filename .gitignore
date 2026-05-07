@@ -3,7 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 venv/
+# Ignore secret env files but ALLOW .env.production (needed for Vercel build)
 .env
+backend/.env
+# .env.production is intentionally committed — it only contains the public API URL
 
 # Node
 node_modules/
